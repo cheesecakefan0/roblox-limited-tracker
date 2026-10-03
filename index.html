@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Roblox Limited Tracker</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --panel-alt: #f8fafc;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --primary: #1d4ed8;
+      --primary-soft: #dbeafe;
+      --success: #15803d;
+      --danger: #dc2626;
+      --warning: #f59e0b;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, "Segoe UI", sans-serif;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+    }
+
+    .status {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 86px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      font-size: 0.98rem;
+      resize: vertical;
+      background: var(--panel-alt);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+      align-items: center;
+    }
+
+    button {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .danger {
+      background: #fff1f2;
+      border-color: #fecdd3;
+      color: #9f1239;
+    }
+
+    .ghost {
+      background: #f8fafc;
+    }
+
+    select {
+      border: 1px solid var(--border);
+      background: white;
+      padding: 9px 12px;
+      border-radius: 10px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    th {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      background: #f8fafc;
+    }
+
+    tbody tr:hover {
+      background: rgba(148, 163, 184, 0.03);
+    }
+
+    .item-cell {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 220px;
+    }
+
+    .thumb {
+      width: 54px;
+      height: 54px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, #eef2ff, #f8fafc);
+      flex-shrink: 0;
+    }
+
+    .item-name {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .asset-id {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .price {
+      font-weight: 700;
+      font-size: 1.02rem;
+    }
+
+    .up { color: var(--success); }
+    .down { color: var(--danger); }
+    .flat { color: var(--warning); }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .actions-inline {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      padding: 30px 12px;
+      font-size: 0.95rem;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    @media (max-width: 640px) {
+      .container { padding: 16px 12px 32px; }
+      .panel { padding: 14px; }
+      th, td { padding: 10px 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <h1>Roblox Limited Tracker</h1>
+      <div id="status" class="status">Idle</div>
+    </div>
+
+    <section class="panel">
+      <label for="assetInput" class="sr-only">Asset IDs</label>
+      <textarea id="assetInput" placeholder="Add one or more asset IDs separated by commas or new lines. Example: 12345678, 87654321"></textarea>
+      <div class="actions">
+        <button id="addBtn" class="primary">Add Items</button>
+        <button id="refreshBtn">Refresh Now</button>
+        <button id="exportBtn" class="ghost">Export JSON</button>
+        <button id="importBtn" class="ghost">Import JSON</button>
+        <label>
+          <span class="muted">Auto-refresh:</span>
+          <select id="intervalSelect">
+            <option value="30">30s</option>
+            <option value="60" selected>60s</option>
+            <option value="180">3m</option>
+            <option value="300">5m</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="panel table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Name</th>
+            <th>Lowest Price</th>
+            <th>Avg Price</th>
+            <th>Volume</th>
+            <th>Stock</th>
+            <th>Updated</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'roblox_limited_tracker_v1';
+    let tracked = {};
+    let refreshTimer = null;
+
+    const els = {
+      tableBody: document.getElementById('tableBody'),
+      assetInput: document.getElementById('assetInput'),
+      status: document.getElementById('status'),
+      addBtn: document.getElementById('addBtn'),
+      refreshBtn: document.getElementById('refreshBtn'),
+      exportBtn: document.getElementById('exportBtn'),
+      importBtn: document.getElementById('importBtn'),
+      intervalSelect: document.getElementById('intervalSelect')
+    };
+
+    function loadTracked() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        tracked = raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        tracked = {};
+      }
+    }
+
+    function saveTracked() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tracked));
+    }
+
+    function setStatus(msg) {
+      els.status.textContent = msg;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatValue(value) {
+      if (value === null || value === undefined || value === '') return '—';
+      return value;
+    }
+
+    function getTrendClass(current, previous) {
+      if (previous == null || current == null) return '';
+      if (current > previous) return 'up';
+      if (current < previous) return 'down';
+      return 'flat';
+    }
+
+    function renderTable() {
+      const ids = Object.keys(tracked).sort((a, b) => Number(a) - Number(b));
+      if (!ids.length) {
+        els.tableBody.innerHTML = '<tr><td colspan="8" class="empty-state">No tracked items yet. Add one or more Asset IDs above.</td></tr>';
+        return;
+      }
+
+      els.tableBody.innerHTML = ids.map((id) => {
+        const item = tracked[id] || {};
+        const name = escapeHtml(item.name || `Asset ${id}`);
+        const lowest = item.lowestPrice ?? '—';
+        const avg = item.recentAveragePrice ?? '—';
+        const vol = item.recentVolume ?? '—';
+        const stock = item.unitsAvailableForConsumption ?? '—';
+        const imageUrl = item.thumbnail || `https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=150x150&format=png`;
+        const updated = item.updatedAt ? new Date(item.updatedAt).toLocaleString() : '—';
+        const priceClass = getTrendClass(item.lowestPrice, item.previousLowestPrice);
+
+        return `
+          <tr>
+            <td>
+              <div class="item-cell">
+                <img class="thumb" src="${imageUrl}" alt="${name}" onerror="this.onerror=null;this.src='https://www.roblox.com/favicon.ico';" />
+              </div>
+            </td>
+            <td>
+              <div class="item-name">${name}</div>
+              <div class="asset-id">Asset ${escapeHtml(id)}</div>
+            </td>
+            <td class="price ${priceClass}">${formatValue(lowest)}</td>
+            <td>${formatValue(avg)}</td>
+            <td>${formatValue(vol)}</td>
+            <td>${formatValue(stock)}</td>
+            <td class="muted">${updated}</td>
+            <td>
+              <div class="actions-inline">
+                <button data-id="${id}" class="refresh-item">Refresh</button>
+                <button data-id="${id}" class="danger remove-item">Remove</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function fetchJsonWithFallback(urls, timeoutMs = 10000) {
+      for (const url of urls) {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), timeoutMs);
+          const response = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeout);
+          if (!response.ok) continue;
+          return await response.json();
+        } catch (err) {
+          continue;
+        }
+      }
+      return null;
+    }
+
+    async function fetchThumbnail(id) {
+      const url = `https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=150x150&format=png`;
+      const data = await fetchJsonWithFallback([url], 12000);
+      if (!data || !data.data || !data.data[0]) return null;
+      return data.data[0].imageUrl || null;
+    }
+
+    async function fetchProductInfo(id) {
+      const url = `https://api.roblox.com/Marketplace/ProductInfo?assetId=${id}`;
+      const data = await fetchJsonWithFallback([url], 12000);
+      if (!data || !data.Name) return null;
+      return data;
+    }
+
+    async function fetchResaleData(id) {
+      const url = `https://economy.roblox.com/v1/assets/${id}/resale-data`;
+      return await fetchJsonWithFallback([url], 12000);
+    }
+
+    async function updateTrackedItem(id) {
+      const existing = tracked[id] || {};
+      const prevLowest = existing.lowestPrice ?? null;
+
+      try {
+        const [resaleData, productInfo, thumbnailUrl] = await Promise.all([
+          fetchResaleData(id),
+          fetchProductInfo(id),
+          fetchThumbnail(id)
+        ]);
+
+        const updated = {
+          ...existing,
+          assetId: id,
+          name: productInfo?.Name || existing.name || `Asset ${id}`,
+          thumbnail: thumbnailUrl || existing.thumbnail || '',
+          lowestPrice: resaleData?.lowestPrice ?? existing.lowestPrice ?? null,
+          recentAveragePrice: resaleData?.recentAveragePrice ?? existing.recentAveragePrice ?? null,
+          recentVolume: resaleData?.recentVolume ?? existing.recentVolume ?? null,
+          unitsAvailableForConsumption: resaleData?.unitsAvailableForConsumption ?? existing.unitsAvailableForConsumption ?? null,
+          previousLowestPrice: prevLowest,
+          updatedAt: new Date().toISOString()
+        };
+
+        tracked[id] = updated;
+        saveTracked();
+        renderTable();
+        return true;
+      } catch (err) {
+        console.error('Failed to update asset', id, err);
+        tracked[id] = { ...existing, updatedAt: new Date().toISOString() };
+        saveTracked();
+        renderTable();
+        return false;
+      }
+    }
+
+    async function refreshAll() {
+      const ids = Object.keys(tracked);
+      if (!ids.length) {
+        setStatus('No items to refresh');
+        return;
+      }
+
+      setStatus('Refreshing item data...');
+      for (const id of ids) {
+        await updateTrackedItem(id);
+      }
+      setStatus(`Updated ${ids.length} items`);
+    }
+
+    function addIdsFromInput() {
+      const raw = els.assetInput.value;
+      if (!raw.trim()) return;
+
+      const ids = [...new Set(
+        raw
+          .split(/[\s,]+/)
+          .map((value) => value.trim())
+          .filter((value) => /^\d+$/.test(value))
+      )];
+
+      if (!ids.length) {
+        setStatus('No valid Roblox asset IDs found');
+        return;
+      }
+
+      let added = 0;
+      ids.forEach((id) => {
+        if (!tracked[id]) {
+          tracked[id] = { assetId: id, name: `Asset ${id}` };
+          added += 1;
+        }
+      });
+
+      saveTracked();
+      renderTable();
+      els.assetInput.value = '';
+      setStatus(`Added ${added} item(s)`);
+
+      if (added) {
+        ids.forEach(async (id) => {
+          if (tracked[id]) await updateTrackedItem(id);
+        });
+      }
+    }
+
+    function removeTracked(id) {
+      if (!tracked[id]) return;
+      delete tracked[id];
+      saveTracked();
+      renderTable();
+      setStatus(`Removed asset ${id}`);
+    }
+
+    function exportTracked() {
+      const blob = new Blob([JSON.stringify(tracked, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'roblox-limited-tracker.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      setStatus('Exported JSON');
+    }
+
+    function importTracked() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,application/json';
+      input.onchange = async () => {
+        const file = input.files?.[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          const imported = JSON.parse(text);
+          if (!imported || typeof imported !== 'object') throw new Error('Invalid JSON file');
+
+          let count = 0;
+          Object.keys(imported).forEach((id) => {
+            if (/^\d+$/.test(id) && !tracked[id]) {
+              tracked[id] = imported[id];
+              count += 1;
+            }
+          });
+
+          saveTracked();
+          renderTable();
+          setStatus(`Imported ${count} item(s)`);
+        } catch (e) {
+          console.error(e);
+          setStatus('Import failed');
+        }
+      };
+      input.click();
+    }
+
+    function startAutoRefresh() {
+      stopAutoRefresh();
+      const intervalSeconds = Number(els.intervalSelect.value || 60);
+      refreshTimer = setInterval(refreshAll, intervalSeconds * 1000);
+      setStatus(`Auto-refresh every ${intervalSeconds}s`);
+    }
+
+    function stopAutoRefresh() {
+      if (refreshTimer) {
+        clearInterval(refreshTimer);
+        refreshTimer = null;
+      }
+    }
+
+    els.addBtn.addEventListener('click', addIdsFromInput);
+    els.refreshBtn.addEventListener('click', refreshAll);
+    els.exportBtn.addEventListener('click', exportTracked);
+    els.importBtn.addEventListener('click', importTracked);
+    els.intervalSelect.addEventListener('change', startAutoRefresh);
+
+    document.body.addEventListener('click', (event) => {
+      const target = event.target.closest('[data-id]');
+      if (!target) return;
+      const id = target.dataset.id;
+
+      if (target.classList.contains('remove-item')) {
+        removeTracked(id);
+        return;
+      }
+
+      if (target.classList.contains('refresh-item')) {
+        updateTrackedItem(id);
+        setStatus(`Refreshing asset ${id}`);
+      }
+    });
+
+    loadTracked();
+    renderTable();
+    if (Object.keys(tracked).length) {
+      refreshAll();
+    }
+    startAutoRefresh();
+  </script>
+</body>
+</html>
